@@ -871,8 +871,4 @@
 		<value xml:lang="en"><![CDATA[No title in this document.]]></value>
 		<value xml:lang="zh-TW"><![CDATA[此文章無標題。]]></value>
 	</item>
-	<item name="cmd_spammer_manage">
-		<value xml:lang="ko"><![CDATA[스패머관리]]></value>
-		<value xml:lang="en"><![CDATA[Spammer Manage]]></value>
-	</item>
 </lang>

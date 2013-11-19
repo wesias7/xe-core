@@ -2354,22 +2354,6 @@ class memberController extends member
 		$this->setTemplatePath($this->module_path.'tpl');
 		$this->setTemplateFile('msg_success_modify_email_address');
 	}
-
-	function procMemberSpammerManage()
-	{
-		if(!Context::get('is_logged')) return new Object(-1,'msg_not_permitted');
-		// check grant is manage
-		$grant = Context::get('grant');
-		if(!$grant->manager) return new Object(-1,'msg_not_permitted');
-
-		$member_srl = Context::get('member_srl');
-		$loop = Context::get('loop');
-
-		if($loop == 0) {
-				
-		}
-		
-	}
 }
 /* End of file member.controller.php */
 /* Location: ./modules/member/member.controller.php */

@@ -161,21 +161,3 @@ function insertSelectedModule(id, module_srl, mid, browser_title) {
     location.href = current_url.setQuery('selected_module_srl',module_srl);
 }
 
-/* 스팸머 처리 */
-function doSpammerManage(member_srl, mid, loop, confirm_message) {
-	if(loop == undefined)
-		loop = 0;
-	if(loop == 0)
-		if(!confirm(confirm_message))	return false;
-	var params = new Array();
-	params['member_srl'] = member_srl;
-	params['mid'] = mid;
-	params['loop'] = loop;
-	exec_xml('member', 'procMemberSpammerManage', params, completeSpammerManage );
-}
-
-function completeSpammerManage(reg_obj, response_tags) {
-	setTimeout( function() {
-		doSpammerManage(member_srl, mid, 1, confirm_message);
-	}, 1000 );
-}

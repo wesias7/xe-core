@@ -574,26 +574,6 @@ class memberView extends member
 		$this->setTemplateFile('modify_email_address');
 	}
 
-	function dispMemberSpammerManage()
-	{
-		if(!Context::get('is_logged')) return new Object(-1,'msg_not_permitted');
-		// check grant is manage
-		$grant = Context::get('grant');
-		if(!$grant->manager) return new Object(-1,'msg_not_permitted');
-
-		$member_srl = Context::get('member_srl');
-		$oMemberModel = &getModel('member');
-		$spammer_info = $oMemberModel->getMemberInfoByMemberSrl($member_srl);
-
-		Context::set('spammer_info',$spammer_info);
-
-		// Select Pop-up layout
-		$this->setLayoutPath('./common/tpl');
-		$this->setLayoutFile('popup_layout');
-
-		$this->setTemplateFile('spammer_manage');
-	}
-
 	/**
 	 * Add javascript codes into the header by checking values of member join form, required and others
 	 * @return void

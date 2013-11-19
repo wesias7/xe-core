@@ -176,6 +176,25 @@ class documentView extends document
 		$this->setTemplatePath($this->module_path.'tpl');
 		$this->setTemplateFile('saved_list_popup');
 	}
+
+	/**
+	 * Trigger method.
+	 * 
+	 * @param string $obj
+	 * @return Object
+	 */
+	function triggerDispSpamuserManage(&$obj)
+	{
+		$member_srl = Context::get('member_srl');
+
+		Context::set('document_config', $document_config);
+
+		$oTemplate = &TemplateHandler::getInstance();
+		$tpl = $oTemplate->compile($this->module_path.'tpl', 'trigger_spamuser_manage');
+		$obj .= $tpl;
+
+		return new Object();
+	}
 }
 /* End of file document.view.php */
 /* Location: ./modules/document/document.view.php */

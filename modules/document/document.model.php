@@ -510,13 +510,6 @@ class documentModel extends document
 		// Add print button
 		$url = getUrl('','module','document','act','dispDocumentPrint','document_srl',$document_srl);
 		$oDocumentController->addDocumentPopupMenu($url,'cmd_print','','printDocument');
-
-		// Add Spammer manage button
-		if($this->grant->manager == 1 && $member_srl!=$logged_info->member_srl)
-		{
-			$url = getUrl('','module','member','act','dispMemberSpammerManage','member_srl',$member_srl,'module_srl',$module_srl);
-			$oDocumentController->addDocumentPopupMenu($url,'cmd_spammer_manage','','popup');
-		}
 		// Call a trigger (after)
 		ModuleHandler::triggerCall('document.getDocumentMenu', 'after', $menu_list);
 		// If you are managing to find posts by ip
