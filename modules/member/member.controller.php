@@ -2506,8 +2506,8 @@ class memberController extends member
 		$oCommentController = &getController('comment');
 		$oCommentModel = &getModel('comment');
 		
-		// delete count by request
-		$getContentsCount = 2;
+		// delete count by one request
+		$getContentsCount = 10;
 
 		// 1. proc comment, 2. proc document
 		$cnt_comment = $oCommentModel->getCommentCountByMemberSrl($member_srl);
