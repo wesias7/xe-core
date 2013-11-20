@@ -2355,6 +2355,13 @@ class memberController extends member
 		$this->setTemplateFile('msg_success_modify_email_address');
 	}
 
+	/**
+	 * trigger for document.getDocumentMenu. Append to popup menu a button for procMemberSpammerManage()
+	 * 
+	 * @param array &$menu_list 
+	 * 
+	 * @return object
+	**/
 	function triggerGetDocumentMenu(&$menu_list)
 	{
 		$is_logged = Context::get('is_logged');
@@ -2380,6 +2387,11 @@ class memberController extends member
 		return new Object();
 	}
 
+	/**
+	 * Spammer manage. Denied user login. And delete or trash all documents. Response Ajax string
+	 * 
+	 * @return object
+	**/
 	function procMemberSpammerManage() 
 	{	
 		$logged_info = Context::get('logged_info');
@@ -2418,7 +2430,7 @@ class memberController extends member
 		// proc document and comment
 		elseif($cnt_loop>1) 
 		{
-			$this->_spammerDocuments($member_srl);
+			$this->_spammerDocuments($member_srl, $isMoveToTrash);
 		}
 
 		// get destination count
@@ -2427,12 +2439,15 @@ class memberController extends member
 
 		$total_count = Context::get('total_count');
 		$remain_count = $cnt_document + $cnt_comment;
-		if($cnt_loop == 0) {
+		if($cnt_loop == 1) {
 			$total_count = $remain_count;
 		}
 
 		// get progress percent		
-		$progress = intval( ( ( $total_count - $remain_count ) / $total_count ) * 100 );
+		if( $total_count > 0 )
+			$progress = intval( ( ( $total_count - $remain_count ) / $total_count ) * 100 );
+		else
+			$progress = 100;
 
 		$this->add('total_count', $total_count);
 		$this->add('remain_count', $remain_count);
@@ -2440,13 +2455,21 @@ class memberController extends member
 		$this->add('member_srl', $member_srl);
 		$this->add('module_srl', $module_srl);
 		$this->add('cnt_loop', ++$cnt_loop);
-		$this->add('proc_msg', $proc_msg);
+		$this->add('proc_type', $proc_type);
 
 		$this->add( "retdata", $arrJson);
 		return new Object(0);
 	}
 
+	/**
+	 * Denied user login and write description
+	 * 
+	 * @param int $member_srl
+	 * 
+	 * @return bool
+	**/
 	private function _spammerMember($member_srl) {
+		$logged_info = Context::get('logged_info');
 		$spam_description = Context::get('spam_description');
 
 		$oMemberModel = &getModel('member');
@@ -2454,18 +2477,29 @@ class memberController extends member
 		// get member current infomation
 		$member_info = $oMemberModel->getMemberInfoByMemberSrl($member_srl, 0, $columnList);
 		// set change infomations
-		$member_info->password = "";	// for not change password
 		$member_info->denied = "Y";
-		$member_info->description .= date("Y-m-d H:i:s") . $logged_info->user_id . " proc-spammer " . $spam_description;
+
+		if( $member_info->description != "" ) $member_info->description .= "\n";	// add new line
+		$member_info->description .= Context::getLang('cmd_spammer') . "[" . date("Y-m-d H:i:s") . " from:" . $logged_info->user_id . " info:" . $spam_description . "]";
 
 		$oMemberController = &getController('member');
-		$output = $oMemberController->updateMember($member_info);
+		//$output = executeQuery('member.updateMember', $member_info);
 		$proc_msg .= "member info updated\t";
+
 		return true;
 	}
 
-	
-	private function _spammerDocuments($member_srl) {
+	/**
+	 * Delete or trash all documents
+	 *
+	 * @param int $member_srl
+	 * @param bool $isMoveToTrash
+	 *
+	 * @return bool
+	**/
+	private function _spammerDocuments($member_srl, $isMoveToTrash) {
+
+		$logged_info = Context::get('logged_info');
 
 		$oDocumentController = &getController('document');
 		$oDocumentModel = &getModel('document');
@@ -2477,38 +2511,29 @@ class memberController extends member
 
 		// 1. proc comment, 2. proc document
 		$cnt_comment = $oCommentModel->getCommentCountByMemberSrl($member_srl);
+		$cnt_document = $oDocumentModel->getDocumentCountByMemberSrl($member_srl);
 		if($cnt_comment > 0) 
 		{
 			$columnList = array();
 			$commentList = $oCommentModel->getCommentListByMemberSrl($member_srl, $columnList, 0, false, $getContentsCount); 
-$this->add( "clist", $commentList);
 			if($commentList) {
 				foreach($commentList as $v) {
 					$oCommentController->deleteComment($v->comment_srl, true, $isMoveToTrash);
 				}
 			}
-		} else {
-			$cnt_document = $oDocumentModel->getDocumentCountByMemberSrl($member_srl);
-			if($cnt_document > 0) {
-				$columnList = array();
-				$document_list = $oDocumentModel->getDocumentListByMemberSrl($member_srl, $columnList, 0, false, $getContentsCount);
-$this->add("dlist", $document_list);
-				if($document_list) {
-					foreach($document_list as $v) {
-						if($isMoveToTrash)
-							$oDocumentController->deleteDocument($v->document_srl);
-						else
-							$oDocumentController->moveDocumentToTrash($v);
-					}
+		} elseif($cnt_document > 0) {
+			$columnList = array();
+			$documentList = $oDocumentModel->getDocumentListByMemberSrl($member_srl, $columnList, 0, false, $getContentsCount);
+			if($documentList) {
+				foreach($documentList as $v) {
+					if($isMoveToTrash) $oDocumentController->moveDocumentToTrash($v);
+					else $oDocumentController->deleteDocument($v->document_srl);
 				}
-
 			}
 		}
-	}
 
-	function procSpammerComment($member_srl) {
+		return true;
 	}
-
 }
 /* End of file member.controller.php */
 /* Location: ./modules/member/member.controller.php */

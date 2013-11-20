@@ -612,6 +612,11 @@ class memberView extends member
 		Context::addHtmlHeader($js_code);
 	}
 
+	/**
+	 * Spammer manage popup
+	 * 
+	 * @return void
+	**/
 	function dispMemberSpammer()
 	{
 		$member_srl = Context::get('member_srl');
@@ -631,6 +636,7 @@ class memberView extends member
 		$oMemberModel = &getModel('member');
 		$spammer_info = $oMemberModel->getMemberInfoByMemberSrl($member_srl);
 
+		Context::loadLang('modules/document/lang/');
 		Context::set('spammer_info',$spammer_info);
 		Context::set('module_srl',$module_srl);
 

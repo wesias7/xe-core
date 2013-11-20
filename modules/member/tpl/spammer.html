@@ -1,66 +1,110 @@
 <!--%import("filter/manage_checked_document.xml")-->
 <style type="text/css">
-.spamuser-trigger .module-name {
-padding: 5px 10px;
-border-bottom: 1px solid #aaa;
-background-color: #333;
-border-radius: 5px 5px 0 0;
-background-image: -webkit-linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
-background-image: -moz-linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
-background-image: -o-linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
-background-image: linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
-}
-.spamuser-trigger .module-name h2 {
-font-size: 14px;
-line-height: 30px;
-margin: 0;
-color: #fff;
-text-shadow: 0 -1px 0 #000;
-}
-
-.btn-proc { padding:40px 0;}
+.dot-line {border-bottom:1px dotted #ddd; padding:8px 0;}
+.progress-box {visibility:hidden;padding:10px;}
+.progress-complete {visibility:hidden;background-color:#EAEAEA;color:#F15F5F;font-weight:bold;text-align:center;padding:3px;}
+.progress-cancel {visibility:hidden;background-color:#EAEAEA;color:#F15F5F;font-weight:bold;text-align:center;padding:3px;}
+.btn-proc { padding:40px 0; text-align:center;}
 </style>
-<load target="js/member_admin.js" />
+
 <div class="x_modal-header">
 	<h1>{$lang->cmd_spammer}</h1>
 </div>
 
+<form action="./" method="post" id="fo_management" onsubmit="return false"> 
+<input type="hidden" name="module" value="member" />
+<input type="hidden" name="act" value="procMemberSpammerManage" />
+<input type="hidden" name="proc_type" value="" />
+<input type="hidden" name="member_srl" value="{$spammer_info->member_srl}" />
+<input type="hidden" name="module_srl" value="{$module_srl}" />
+<input type="hidden" name="cnt_loop" value="1" />
 <div class="x_modal-body x_form-horizontal" style="max-height:none">
-	<p>스팸 작성자 차단/삭제 및 회원이 남긴 글과 댓글을 모두 휴지통 이동 또는 삭제 합니다.
-	이 처리는 회원이 작성한 게시물의 양에 따라 오래걸릴 수 있습니다. </p>
-	<p>스팸 처리 대상 닉네임 : {$spammer_info->nick_name}</p>
-	<div class="x_proc-per">
-	
+	<div class="dot-line">{$lang->description} : {$lang->spammer_description}</div>
+	<div class="dot-line">{$lang->nick_name} : <span class="nick_name">{$spammer_info->nick_name}</span></div>
+
+	<div class="dot-line">
+		<p>{$lang->about_member_description}</p>
+		<textarea name="spam_description" id="spam_description" cols="400" rows="3" style="width:400px"></textarea>
 	</div>
-	<div>
-		<p>남기는 말:</p>
-		<textarea id="spam_description" cols="400" rows="10"></textarea>
+	<div class="btn-proc" >
+		<button type="submit" onclick="doSpammerManage( {proc_type:'trash'} )" />{$lang->cmd_trash}</button>
+		<button type="submit" onclick="doSpammerManage( {proc_type:'delete'} )" />{$lang->cmd_delete}</button>
 	</div>
-	<div class="btn-proc" ><button type="button" onclick="doSpammerManage( {member_srl:'{$spammer_info->member_srl}', module_srl:'{$module_srl}'} );">스팸 작성자 데이터 삭제 시작</button></div>
+
+	<div class="progress-box">
+		<div>Document Count : <span id="document_count"></span> <span id="document_percent"></span></div>
+		<div class="x_progress x_progress-striped x_active">
+			<div class="x_bar" id="progressBar" style="width: 0%"></div>
+		</div>
+		<div class="progress-complete">{$lang->cmd_complete}</div>
+		<div class-"cancel"><button type="button" onclick="cancelSpammerManage();">{$lang->cmd_cancel}</button></div>
+	</div>
+	<div class="progress-cancel dot-line">{$lang->success_declare_canceled}</div>
 </div>
+</form>
 <script type="text/javascript">
+var bSpammerManageProc = true;
+var f = jQuery('#fo_management').get(0);
 function doSpammerManage( args ) {
-	if( args.cnt_loop == undefined ) {
-		if(!confirm('처리합니까?')) return false;
-		args.cnt_loop = 0;
-		args.spam_description = jQuery('#spam_description').val();
+	if( args.cnt_loop == undefined ) { 
+		if(!confirm('{$lang->confirm_process}')) return false;
+
+		// reset form
+		f.proc_type.value = args.proc_type;
+		f.cnt_loop.value = 1;
+
+		bSpammerManageProc = true;
+		args.member_srl = f.member_srl.value;
+		args.module_srl = f.module_srl.value;
+		args.cnt_loop = f.cnt_loop.value;
+		args.spam_description = f.spam_description.value;
+		args.proc_type = f.proc_type.value;
+
+		jQuery('.progress-box').css('visibility','visible');
+		jQuery('.progress-cancel').css('visibility','hidden');
+
 	}
 
-	jQuery.exec_json( 'member.procMemberSpammerManage', args, progressSpammerManage );
+	jQuery.exec_json( f.module.value + '.' + f.act.value, args, progressSpammerManage );
+
+	return false; // don't page move
 }
 
 function progressSpammerManage( data ) {
+
+
 	setTimeout( function() {
-
-//		if(confirm( 'go?' ) == false) return;
-
-		jQuery('.x_proc-per').append( "<p> progress ==> " + data.progress + " % ..</p>" );
-
-		if(data.remain_count <= 0) return;
+		if( data.total_count != undefined && parseInt( data.total_count ) > 0 )  {
+			var doc_count = parseInt( data.total_count ) - parseInt( data.remain_count );
+			jQuery('#document_count').html( doc_count + "/" + data.total_count );
+			jQuery('#document_percent').html(data.progress + "%");
+		}
+		jQuery('#progressBar').width(data.progress + "%");
+		if(data.remain_count <= 0) {
+			jQuery('.progress-complete').css('visibility','visible');
+			return;
+		}
 
 		var args = data;
+		f.cnt_loop.value = data.cnt_loop;
+		
+		if( bSpammerManageProc == false ) {
+			jQuery('.progress-box').css('visibility','hidden');
+			jQuery('.progress-cancel').css('visibility','visible');
+
+			// reset progress values
+			jQuery('#document_count').html("");
+			jQuery('#document_percent').html("");
+			jQuery('#progressBar').width("0%");
+
+			return;
+		}
 		doSpammerManage( args );
-	}, 500 );
+		
+	}, 2000 );
 }
 
+function cancelSpammerManage() {
+	bSpammerManageProc = false;
+}
 </script>
