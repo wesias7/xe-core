@@ -2619,5 +2619,9 @@
 		<value xml:lang="en"><![CDATA[Address information does not exist.]]></value>
 		<value xml:lang="zh-CN"><![CDATA[加入会员后要移动的情报不存在]]></value>
 	</item>
+	<item name="cmd_spammer">
+		<value xml:lang="ko"><![CDATA[스패머 관리]]></value>
+		<value xml:lang="en"><![CDATA[Spam User Manage]]></value>
+	</item>
 
 </lang>

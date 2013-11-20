@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<lang>
-	<item name="cmd_spamuser_manage">
-		<value xml:lang="ko"><![CDATA[스패머 관리]]></value>
-		<value xml:lang="en"><![CDATA[Spam User Manage]]></value>
-	</item>
-</lang>

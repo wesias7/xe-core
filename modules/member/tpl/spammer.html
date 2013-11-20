@@ -1,0 +1,68 @@
+<!--%import("filter/manage_checked_document.xml")-->
+<style type="text/css">
+.spamuser-trigger .module-name {
+padding: 5px 10px;
+border-bottom: 1px solid #aaa;
+background-color: #333;
+border-radius: 5px 5px 0 0;
+background-image: -webkit-linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
+background-image: -moz-linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
+background-image: -o-linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
+background-image: linear-gradient(top,#666,#333 50%,#000 50%,#333 100%);
+}
+.spamuser-trigger .module-name h2 {
+font-size: 14px;
+line-height: 30px;
+margin: 0;
+color: #fff;
+text-shadow: 0 -1px 0 #000;
+}
+
+.btn-proc { padding:40px 0;}
+</style>
+<load target="js/member_admin.js" />
+<div class="x_modal-header">
+	<h1>{$lang->cmd_spammer}</h1>
+</div>
+
+<div class="x_modal-body x_form-horizontal" style="max-height:none">
+	<p>스팸 작성자 차단/삭제 및 회원이 남긴 글과 댓글을 모두 휴지통 이동 또는 삭제 합니다.
+	이 처리는 회원이 작성한 게시물의 양에 따라 오래걸릴 수 있습니다. </p>
+	<p>스팸 처리 대상 닉네임 : {$spammer_info->nick_name}</p>
+	<div class="x_proc-per">
+	
+	</div>
+	<div>
+		<p>남기는 말:</p>
+		<textarea id="spam_description" cols="400" rows="10"></textarea>
+	</div>
+	<div class="btn-proc" ><button type="button" onclick="doSpammerManage( {member_srl:'{$spammer_info->member_srl}', module_srl:'{$module_srl}'} );">스팸 작성자 데이터 삭제 시작</button></div>
+</div>
+<script type="text/javascript">
+function doSpammerManage( args ) {
+	if( args.cnt_loop == undefined ) {
+		if(!confirm('처리합니까?')) return false;
+		args.cnt_loop = 0;
+		args.spam_description = jQuery('#spam_description').val();
+	}
+
+	jQuery.exec_json( 'member.procMemberSpammerManage', args, progressSpammerManage );
+}
+
+function progressSpammerManage( data ) {
+	setTimeout( function() {
+
+		if(confirm( 'go?' ) == false) return;
+
+		if(data.remain_count <= 0) return;
+
+		console.log( data );
+
+		jQuery('.x_proc-per').append( "<p> progress ==> " + data.progress + " % ..</p>" );
+
+		var args = data;
+		doSpammerManage( args );
+	}, 500 );
+}
+
+</script>
