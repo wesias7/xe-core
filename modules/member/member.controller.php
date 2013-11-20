@@ -2483,7 +2483,7 @@ class memberController extends member
 		$member_info->description .= Context::getLang('cmd_spammer') . "[" . date("Y-m-d H:i:s") . " from:" . $logged_info->user_id . " info:" . $spam_description . "]";
 
 		$oMemberController = &getController('member');
-		//$output = executeQuery('member.updateMember', $member_info);
+		$output = executeQuery('member.updateMember', $member_info);
 		$proc_msg .= "member info updated\t";
 
 		return true;
