@@ -1083,6 +1083,7 @@ class commentModel extends comment
 	{
 		$args = new stdClass();
 		$args->member_srl = $member_srl;
+		$args->list_count = $count;
 		$output = executeQuery('comment.getCommentListByMemberSrl', $args, $columnList);
 		$comment_list = $output->data;
 

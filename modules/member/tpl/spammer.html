@@ -52,13 +52,11 @@ function doSpammerManage( args ) {
 function progressSpammerManage( data ) {
 	setTimeout( function() {
 
-		if(confirm( 'go?' ) == false) return;
-
-		if(data.remain_count <= 0) return;
-
-		console.log( data );
+//		if(confirm( 'go?' ) == false) return;
 
 		jQuery('.x_proc-per').append( "<p> progress ==> " + data.progress + " % ..</p>" );
+
+		if(data.remain_count <= 0) return;
 
 		var args = data;
 		doSpammerManage( args );

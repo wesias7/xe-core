@@ -2481,9 +2481,10 @@ class memberController extends member
 		{
 			$columnList = array();
 			$commentList = $oCommentModel->getCommentListByMemberSrl($member_srl, $columnList, 0, false, $getContentsCount); 
+$this->add( "clist", $commentList);
 			if($commentList) {
 				foreach($commentList as $v) {
-					$oCommentController->deleteComment($v->comment_srl, false, $isMoveToTrash);
+					$oCommentController->deleteComment($v->comment_srl, true, $isMoveToTrash);
 				}
 			}
 		} else {
@@ -2491,6 +2492,7 @@ class memberController extends member
 			if($cnt_document > 0) {
 				$columnList = array();
 				$document_list = $oDocumentModel->getDocumentListByMemberSrl($member_srl, $columnList, 0, false, $getContentsCount);
+$this->add("dlist", $document_list);
 				if($document_list) {
 					foreach($document_list as $v) {
 						if($isMoveToTrash)

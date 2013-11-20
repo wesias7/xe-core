@@ -1519,6 +1519,7 @@ class documentModel extends document
 	{
 		$args = new stdClass();
 		$args->member_srl = $member_srl;
+		$args->list_count = $count;
 		$output = executeQuery('document.getDocumentListByMemberSrl', $args, $columnList);
 		$document_list = $output->data;
 		
