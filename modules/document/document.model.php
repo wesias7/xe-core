@@ -1501,9 +1501,7 @@ class documentModel extends document
 		$args = new stdClass();
 		$args->member_srl = $member_srl;
 		$output = executeQuery('document.getDocumentCountByMemberSrl', $args);
-		$total_count = $output->data->count;
-
-		return (int) $total_count;
+		return (int) $output->data->count;
 	}
 
 	/**
@@ -1523,7 +1521,7 @@ class documentModel extends document
 		$output = executeQuery('document.getDocumentListByMemberSrl', $args, $columnList);
 		$document_list = $output->data;
 		
-		if(!$document_list) return;
+		if(!$document_list) return array();
 		if(!is_array($document_list)) $document_list = array($document_list);
 
 		return $document_list;	

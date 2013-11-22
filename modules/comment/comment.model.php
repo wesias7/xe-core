@@ -1064,9 +1064,7 @@ class commentModel extends comment
 		$args = new stdClass();
 		$args->member_srl = $member_srl;
 		$output = executeQuery('comment.getCommentCountByMemberSrl', $args);
-		$total_count = $output->data->count;
-
-		return (int) $total_count;
+		return (int) $output->data->count;
 	}
 
 
@@ -1087,7 +1085,7 @@ class commentModel extends comment
 		$output = executeQuery('comment.getCommentListByMemberSrl', $args, $columnList);
 		$comment_list = $output->data;
 
-		if(!$comment_list) return;
+		if(!$comment_list) return array();
 		if(!is_array($comment_list)) $comment_list = array($comment_list);
 
 		return $comment_list;

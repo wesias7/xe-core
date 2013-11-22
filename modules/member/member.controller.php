@@ -1962,8 +1962,10 @@ class memberController extends member
 
 	/**
 	 * Modify member information
+	 * 
+	 * @param bool $is_admin , modified 2013-11-22
 	 */
-	function updateMember($args) 
+	function updateMember($args, $is_admin = FALSE) 
 	{
 		// Call a trigger (before)
 		$output = ModuleHandler::triggerCall('member.updateMember', 'before', $args);
@@ -1987,7 +1989,7 @@ class memberController extends member
 		{
 			unset($args->is_admin);
 			unset($args->denied);
-			if($logged_info->member_srl != $args->member_srl)
+			if($logged_info->member_srl != $args->member_srl && $is_admin == false)
 			{
 				return $this->stop('msg_invalid_request');
 			}
@@ -2364,10 +2366,9 @@ class memberController extends member
 	**/
 	function triggerGetDocumentMenu(&$menu_list)
 	{
-		$is_logged = Context::get('is_logged');
+		if(!Context::get('is_logged')) return new Object();
+
 		$logged_info = Context::get('logged_info');
-
-
 		$document_srl = Context::get('target_srl');
 
 		$oDocumentModel = &getModel('document');
@@ -2377,7 +2378,6 @@ class memberController extends member
 		$module_srl = $oDocument->get('module_srl');
 
 		if(!$member_srl) return new Object();
-		if(!$is_logged) return new Object();
 		if($oDocumentModel->grant->manager != 1 || $member_srl==$logged_info->member_srl) return new Object();
 
 		$oDocumentController = &getController('document');
@@ -2394,6 +2394,8 @@ class memberController extends member
 	**/
 	function procMemberSpammerManage() 
 	{	
+		if(!Context::get('is_logged')) return new Object(-1,'msg_not_permitted');
+
 		$logged_info = Context::get('logged_info');
 		$member_srl = Context::get('member_srl');
 		$module_srl = Context::get('module_srl');
@@ -2406,32 +2408,23 @@ class memberController extends member
 		// check grant
 		$oModuleModel = &getModel('module');
 		$columnList = array('module_srl', 'module');
-		$args = new stdClass();
-		$args->module_srl = $module_srl;
-		$module_info = $oModuleModel->getModuleInfoByModuleSrl($args->module_srl, $columnList);
+		$module_info = $oModuleModel->getModuleInfoByModuleSrl($module_srl, $columnList);
 		$grant = $oModuleModel->getGrant($module_info, $logged_info);
 
-		if(!Context::get('is_logged')) return new Object(-1,'msg_not_permitted');
 		if(!$grant->manager) return new Object(-1,'msg_not_permitted');
 
 		$proc_msg = "";
 
-		$oDocumentController = &getController('document');
 		$oDocumentModel = &getModel('document');
-		$oCommentController = &getController('comment');
 		$oCommentModel = &getModel('comment');
 
 		// delete or trash destination
 		// proc member
 		if($cnt_loop == 1)
-		{
 			$this->_spammerMember($member_srl);
-		} 
 		// proc document and comment
 		elseif($cnt_loop>1) 
-		{
 			$this->_spammerDocuments($member_srl, $isMoveToTrash);
-		}
 
 		// get destination count
 		$cnt_document = $oDocumentModel->getDocumentCountByMemberSrl($member_srl);
@@ -2439,12 +2432,10 @@ class memberController extends member
 
 		$total_count = Context::get('total_count');
 		$remain_count = $cnt_document + $cnt_comment;
-		if($cnt_loop == 1) {
-			$total_count = $remain_count;
-		}
+		if($cnt_loop == 1) $total_count = $remain_count;
 
 		// get progress percent		
-		if( $total_count > 0 )
+		if($total_count > 0)
 			$progress = intval( ( ( $total_count - $remain_count ) / $total_count ) * 100 );
 		else
 			$progress = 100;
@@ -2457,7 +2448,6 @@ class memberController extends member
 		$this->add('cnt_loop', ++$cnt_loop);
 		$this->add('proc_type', $proc_type);
 
-		$this->add( "retdata", $arrJson);
 		return new Object(0);
 	}
 
@@ -2477,13 +2467,13 @@ class memberController extends member
 		// get member current infomation
 		$member_info = $oMemberModel->getMemberInfoByMemberSrl($member_srl, 0, $columnList);
 		// set change infomations
+		$member_info->password= "";	// not modify password
 		$member_info->denied = "Y";
 
 		if( $member_info->description != "" ) $member_info->description .= "\n";	// add new line
 		$member_info->description .= Context::getLang('cmd_spammer') . "[" . date("Y-m-d H:i:s") . " from:" . $logged_info->user_id . " info:" . $spam_description . "]";
 
-		$oMemberController = &getController('member');
-		$output = executeQuery('member.updateMember', $member_info);
+		$this->updateMember($member_info, true);
 		$proc_msg .= "member info updated\t";
 
 		return true;
@@ -2498,9 +2488,6 @@ class memberController extends member
 	 * @return bool
 	**/
 	private function _spammerDocuments($member_srl, $isMoveToTrash) {
-
-		$logged_info = Context::get('logged_info');
-
 		$oDocumentController = &getController('document');
 		$oDocumentModel = &getModel('document');
 		$oCommentController = &getController('comment');
