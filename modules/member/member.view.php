@@ -611,6 +611,43 @@ class memberView extends member
 
 		Context::addHtmlHeader($js_code);
 	}
+
+	/**
+	 * Spammer manage popup
+	 * 
+	 * @return void
+	**/
+	function dispMemberSpammer()
+	{
+		$member_srl = Context::get('member_srl');
+		$module_srl = Context::get('module_srl');
+
+		// check grant
+		$oModuleModel = &getModel('module');
+		$columnList = array('module_srl', 'module');
+		$args = new stdClass();
+		$args->module_srl = $module_srl;
+		$module_info = $oModuleModel->getModuleInfoByModuleSrl($args->module_srl, $columnList);
+		$grant = $oModuleModel->getGrant($module_info, Context::get('logged_info'));
+
+		if(!Context::get('is_logged')) return new Object(-1,'msg_not_permitted');
+		if(!$grant->manager) return new Object(-1,'msg_not_permitted');
+
+		$oMemberModel = &getModel('member');
+		$spammer_info = $oMemberModel->getMemberInfoByMemberSrl($member_srl);
+
+		Context::loadLang('modules/document/lang/');
+		Context::set('spammer_info',$spammer_info);
+		Context::set('module_srl',$module_srl);
+
+		// Select Pop-up layout
+		$this->setLayoutPath('./common/tpl');
+		$this->setLayoutFile('popup_layout');
+
+		$this->setTemplatePath($this->module_path.'tpl');
+		$this->setTemplateFile('spammer');
+	}
+	
 }
 /* End of file member.view.php */
 /* Location: ./modules/member/member.view.php */
