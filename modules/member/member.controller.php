@@ -1988,7 +1988,8 @@ class memberController extends member
 		else
 		{
 			unset($args->is_admin);
-			unset($args->denied);
+			if($is_admin == false)
+				unset($args->denied);
 			if($logged_info->member_srl != $args->member_srl && $is_admin == false)
 			{
 				return $this->stop('msg_invalid_request');
@@ -2456,27 +2457,32 @@ class memberController extends member
 	 * 
 	 * @param int $member_srl
 	 * 
-	 * @return bool
+	 * @return object 
 	**/
 	private function _spammerMember($member_srl) {
 		$logged_info = Context::get('logged_info');
-		$spam_description = Context::get('spam_description');
+		$spam_description = trim( Context::get('spam_description') );
 
 		$oMemberModel = &getModel('member');
-		$columnList = array();
+		$columnList = array('member_srl', 'description');
 		// get member current infomation
 		$member_info = $oMemberModel->getMemberInfoByMemberSrl($member_srl, 0, $columnList);
-		// set change infomations
-		$member_info->password= "";	// not modify password
-		$member_info->denied = "Y";
 
-		if( $member_info->description != "" ) $member_info->description .= "\n";	// add new line
-		$member_info->description .= Context::getLang('cmd_spammer') . "[" . date("Y-m-d H:i:s") . " from:" . $logged_info->user_id . " info:" . $spam_description . "]";
+		$oDocumentModel = &getModel('document');
+		$oCommentModel = &getModel('comment');
+		$cnt_comment = $oCommentModel->getCommentCountByMemberSrl($member_srl);
+		$cnt_document = $oDocumentModel->getDocumentCountByMemberSrl($member_srl);
+		$total_count = $cnt_comment + $cnt_document;
 
-		$this->updateMember($member_info, true);
-		$proc_msg .= "member info updated\t";
+		$args = new stdClass();
+		$args->member_srl= $member_info->member_srl;
+		$args->denied = "Y";
+		$args->description = trim( $member_info->description );
+		if( $args->description != "" ) $args->description .= "\n";	// add new line
 
-		return true;
+		$args->description .= Context::getLang('cmd_spammer') . "[" . date("Y-m-d H:i:s") . " from:" . $logged_info->user_id . " info:" . $spam_description . " docuemnts count:" . $total_count . "]";
+
+		return $this->updateMember($args, true);
 	}
 
 	/**
@@ -2485,7 +2491,7 @@ class memberController extends member
 	 * @param int $member_srl
 	 * @param bool $isMoveToTrash
 	 *
-	 * @return bool
+	 * @return object 
 	**/
 	private function _spammerDocuments($member_srl, $isMoveToTrash) {
 		$oDocumentController = &getController('document');
@@ -2519,7 +2525,7 @@ class memberController extends member
 			}
 		}
 
-		return true;
+		return array();
 	}
 }
 /* End of file member.controller.php */

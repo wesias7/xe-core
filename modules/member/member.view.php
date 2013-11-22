@@ -633,7 +633,6 @@ class memberView extends member
 		if(!$grant->manager) return new Object(-1,'msg_not_permitted');
 
 		$oMemberModel = &getModel('member');
-		$spammer_info = ;
 
 		Context::loadLang('modules/document/lang/');
 		Context::set('spammer_info', $oMemberModel->getMemberInfoByMemberSrl($member_srl));
