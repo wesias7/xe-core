@@ -17,14 +17,29 @@ class spamfilterAdminController extends spamfilter
 	function procSpamfilterAdminInsertConfig()
 	{
 		// Get the default information
-		$argsConfig = Context::gets('limits','check_trackback');
-		$flag = Context::get('flag');
-		//interval, limit_count
-		if($argsConfig->check_trackback!='Y') $argsConfig->check_trackback = 'N';
-		if($argsConfig->limits!='Y') $argsConfig->limits = 'N';
+		$configs = Context::gets('check_limit','interval1','limit_count1','limit_time1','interval2','limit_count2','limit_time2','check_trackback');
+
+		// auto
+		if($configs->check_limit!='Y') $configs->check_limit = 'N';
+		if(!$configs->interval1 || !$configs->limit_count1 || !$configs->limit_time1)
+		{
+			unset($configs->interval1);
+			unset($configs->limit_count1);
+			unset($configs->limit_time1);
+		}
+		if(!$configs->interval2 || !$configs->limit_count2 || !$configs->limit_time2)
+		{
+			unset($configs->interval2);
+			unset($configs->limit_count2);
+			unset($configs->limit_time2);
+		}
+		
+		//trackback
+		if($configs->check_trackback!='Y') $configs->check_trackback = 'N';
+		
 		// Create and insert the module Controller object
 		$oModuleController = &getController('module');
-		$moduleConfigOutput = $oModuleController->insertModuleConfig('spamfilter',$argsConfig);
+		$moduleConfigOutput = $oModuleController->insertModuleConfig('spamfilter',$configs);
 		if(!$moduleConfigOutput->toBool()) return $moduleConfigOutput;
 
 		$returnUrl = Context::get('success_return_url') ? Context::get('success_return_url') : getNotEncodedUrl('', 'module', 'admin', 'act', 'dispSpamfilterAdminConfigBlock');

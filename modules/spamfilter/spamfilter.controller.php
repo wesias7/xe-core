@@ -28,6 +28,10 @@ class spamfilterController extends spamfilter
 	function triggerInsertDocument(&$obj)
 	{
 		if($_SESSION['avoid_log']) return new Object();
+
+		// Save a log
+		$this->insertLog();
+		
 		// Check the login status, login information, and permission
 		$is_logged = Context::get('is_logged');
 		$logged_info = Context::get('logged_info');
@@ -51,10 +55,9 @@ class spamfilterController extends spamfilter
 		if($obj->document_srl == 0)
 		{
 			$output = $oFilterModel->checkLimited();
+			debugPrint($output);
 			if(!$output->toBool()) return $output;
 		}
-		// Save a log
-		$this->insertLog();
 
 		return new Object();
 	}
@@ -65,6 +68,10 @@ class spamfilterController extends spamfilter
 	function triggerInsertComment(&$obj)
 	{
 		if($_SESSION['avoid_log']) return new Object();
+
+		// Save a log
+		$this->insertLog();
+		
 		// Check the login status, login information, and permission
 		$is_logged = Context::get('is_logged');
 		$logged_info = Context::get('logged_info');
@@ -91,8 +98,6 @@ class spamfilterController extends spamfilter
 			if(!$output->toBool()) return $output;
 		}
 		unset($obj->__isupdate);
-		// Save a log
-		$this->insertLog();
 
 		return new Object();
 	}

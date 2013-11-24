@@ -17,3 +17,24 @@ function doDeleteDeniedWord(word) {
 	fo_obj.act.value = "procSpamfilterAdminDeleteDeniedWord";
 	fo_obj.submit();
 }
+
+function doDeleteCondition(button) {
+	jQuery(button).parents('div.x_controls').find('input').val('');
+	doSetConditionPreview();
+}
+
+function doSetConditionPreview(){
+	var div = jQuery('div.block_config'); 
+	div.find('input').each(function(i){
+		var name = jQuery(this).attr('name');
+		var value = jQuery(this).val()?jQuery(this).val():'-';
+		div.find('strong.'+ name).text(value);			
+	})
+}
+jQuery(function($) {
+
+	doSetConditionPreview();
+	$('.block_config input').change(function(){
+		doSetConditionPreview(this);
+	})
+});

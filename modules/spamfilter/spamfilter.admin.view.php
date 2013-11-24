@@ -60,7 +60,6 @@ class spamfilterAdminView extends spamfilter
 		$oModuleModel = &getModel('module');
 		$config = $oModuleModel->getModuleConfig('spamfilter');
 		Context::set('config',$config);
-
 		$this->setTemplateFile('config_block');
 	}
 }

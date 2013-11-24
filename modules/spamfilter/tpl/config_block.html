@@ -1,44 +1,89 @@
 <include target="./header.html" />
-<section class="section">
+
 	<ul class="x_nav x_nav-tabs">
 		<li><a href="{getUrl('','module','admin','act','dispSpamfilterAdminDeniedIPList')}">{$lang->cmd_denied_ip}</a></li>
 		<li><a href="{getUrl('','module','admin','act','dispSpamfilterAdminDeniedWordList')}">{$lang->cmd_denied_word}</a></li>
 		<li class="x_active"><a href="{getUrl('','module','admin','act','dispSpamfilterAdminConfigBlock')}">{$lang->cmd_config_block}</a></li>
 	</ul>
-	<form action="./" method="post" id="spamfilterConfig">	
+	<form action="./" method="post" id="spamfilterConfig" class="x_form-horizontal">	
 		<input type="hidden" name="act" value="procSpamfilterAdminInsertConfig" />
 		<input type="hidden" name="module" value="spamfilter" />
 		<input type="hidden" name="ruleset" value="insertConfig" />
 		<input type="hidden" name="xe_validator_id" value="modules/spamfilter/tpl/1" />
-		<div class="x_control-group">
-			<p><strong>{$lang->cmd_interval}</strong></p>
-			<label for="spamCond1_yes" class="x_inline">
-				<input type="radio" name="limits" id="spamCond1_yes" value="Y" checked="checked"|cond="$config->limits=='Y' || $config->limits ==''" />
-				{$lang->cmd_yes}
-			</label>
-			<label for="spamCond1_no" class="x_inline">
-				<input type="radio" name="limits" id="spamCond1_no" value="N" checked="checked"|cond="$config->limits!='Y' && $config->limits !=''" /> 
-				{$lang->cmd_no}
-			</label>
-		</div>
-		<div class="x_control-group">
-			<p><strong>{$lang->cmd_check_trackback}</strong></p>
-			<label for="spamCond2_yes" class="x_inline">
-				<input type="radio" name="check_trackback" id="spamCond2_yes" value="Y" checked="checked"|cond="$config->check_trackback=='Y' || $config->check_trackback==''" />
-				{$lang->cmd_yes}
-			</label>
-			<label for="spamCond2_no" class="x_inline">
-				<input type="radio" name="check_trackback" id="spamCond2_no" value="N" checked="checked"|cond="$config->check_trackback!='Y' &&  $config->check_trackback!=''" / > 
-				{$lang->cmd_no}
-			</label>
-		</div>
+		
+		<section class="section">
+			<h1>자동 차단<button type="button" class="snToggle x_icon-chevron-up">Toggle this section</button></h1>
+			<div class="x_control-group">
+				<label class="x_control-label">자동 차단 사용</label>
+				<div class="x_controls">
+					<p><strong>자동 차단 기능을 사용하시겠습니까? 사용할 경우, 아래의 설정에 따라 글등록을 차단할 수 있습니다. </strong></p>
+					<label for="spamCond2_yes" class="x_inline">
+						<input type="radio" name="check_limit" id="spamCond2_yes" value="Y" checked="checked"|cond="$config->check_limit=='Y'" />
+						{$lang->cmd_yes}
+					</label>
+					<label for="spamCond2_no" class="x_inline">
+						<input type="radio" name="check_limit" id="spamCond2_no" value="N" checked="checked"|cond="$config->check_limit!='Y'" / > 
+						{$lang->cmd_no}
+					</label>
+				</div>
+			</div>
+			
+			<div class="x_control-group">
+				<label class="x_control-label">자동 차단 설정1</label>
+				<div class="x_controls block_config">
+					<input type="number" min="0" name="interval1" style="width:150px" placeholder="검사기간(초)" value="{$config->interval1}" >
+					<input type="number" min="0" name="limit_count1" style="width:150px" placeholder="제한등록수(건)" value="{$config->limit_count1}" >
+					<input type="number" min="0" name="limit_time1" style="width:200px" placeholder="글등록제한시간(초)" value="{$config->limit_time1}" >
+					<button type="button" class="x_btn" onclick="doDeleteCondition(this);">삭제</button>
+					
+					<p class="x_help-block">
+						<strong class="interval1">-</strong>초간
+						<strong class="limit_count1">-</strong>건의 글을 등록할 경우, 
+						<strong class="limit_time1">-</strong>초간 글쓰기가 차단됩니다.
+					</p>
+				</div>
+			</div>
+			
+			<div class="x_control-group">
+				<label class="x_control-label">자동 차단 설정2</label>
+				<div class="x_controls block_config">
+					<input type="number" min="0" name="interval2" style="width:150px" placeholder="검사기간(초)" value="{$config->interval2}" >
+					<input type="number" min="0" name="limit_count2" style="width:150px" placeholder="제한등록수(건)" value="{$config->limit_count2}" >
+					<input type="number" min="0" name="limit_time2" style="width:200px" placeholder="글등록제한시간(초)" value="{$config->limit_time2}" >
+					<button type="button" class="x_btn" onclick="doDeleteCondition(this);">삭제</button>
+					
+					<p class="x_help-block">
+						<strong class="interval2">-</strong>초간
+						<strong class="limit_count2">-</strong>건의 글을 등록할 경우, 
+						<strong class="limit_time2">-</strong>초간 글쓰기가 차단됩니다.
+					</p>
+				</div>
+			</div>
+		</section>
+		
+		<section class="section">
+			<h1>엮인글 차단<button type="button" class="snToggle x_icon-chevron-up">Toggle this section</button></h1>
+			<div class="x_control-group">
+				<label class="x_control-label" for="cond1interval">엮인글 차단 </label>
+				<div class="x_controls">
+					<p><strong>{$lang->cmd_check_trackback}</strong></p>
+					<label for="spamCond2_yes" class="x_inline">
+						<input type="radio" name="check_trackback" id="spamCond2_yes" value="Y" checked="checked"|cond="$config->check_trackback=='Y' || $config->check_trackback==''" />
+						{$lang->cmd_yes}
+					</label>
+					<label for="spamCond2_no" class="x_inline">
+						<input type="radio" name="check_trackback" id="spamCond2_no" value="N" checked="checked"|cond="$config->check_trackback!='Y' &&  $config->check_trackback!=''" / > 
+						{$lang->cmd_no}
+					</label>
+				</div>
+			</div>
+		</section>
 		<div class="x_clearfix btnArea">
 			<div class="x_pull-right">
 				<button type="submit" class="x_btn x_btn-primary">{$lang->cmd_save}</button>
 			</div>
 		</div>
 	</form>
-</section>
 <include target="./footer.html" />
 
 

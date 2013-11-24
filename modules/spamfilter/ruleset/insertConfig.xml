@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ruleset version="1.5.0">
     <fields>
-   		<field name="limits" required="true" />
+   		<field name="check_limit" required="true" />
+   		<field name="interval1" required="true" default="0" rule="number" />
+   		<field name="limit_count1" required="true" default="0" rule="number" />
+   		<field name="limit_time1" required="true" default="0" rule="number" />
+   		<field name="interval2" required="true" default="0" rule="number" />
+   		<field name="limit_count2" required="true" default="0" rule="number" />
+   		<field name="limit_time2" required="true" default="0" rule="number" />
  		<field name="check_trackback" required="true" />
 	</fields>
 </ruleset>

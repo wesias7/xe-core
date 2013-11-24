@@ -99,32 +99,50 @@ class spamfilterModel extends spamfilter
 	 */
 	function checkLimited()
 	{
+
+		// TODO: 글 갯수가 1개일 경우 처리로직 구현, 허용횟수를 초과했을 경우, 계산방식 수정
 		$config = $this->getConfig();
 
-		if($config->limits != 'Y') return new Object(); 
-		$limit_count = '3';
-		$interval = '10';
+		if(!$config->interval1 && !$config->interval2) return new Object();
 
-		$count = $this->getLogCount($interval);
-
+		$conditions = array();
+		
+		$conditions[0]->interval = $config->interval1;
+		$conditions[0]->limit_count = $config->limit_count1;
+		$conditions[0]->limit_time = $config->limit_time1;
+		
+		$conditions[1]->interval = $config->interval2;
+		$conditions[1]->limit_count = $config->limit_count2;
+		$conditions[1]->limit_time = $config->limit_time2;
+		
 		$ipaddress = $_SERVER['REMOTE_ADDR'];
-		// Ban the IP address if the interval is exceeded
-		if($count>=$limit_count)
-		{
-			$oSpamFilterController = &getController('spamfilter');
-			$oSpamFilterController->insertIP($ipaddress, 'AUTO-DENIED : Over limit');
-			return new Object(-1, 'msg_alert_registered_denied_ip');
-		}
-		// If the number of limited posts is not reached, keep creating.
-		if($count)
-		{
-			$message = sprintf(Context::getLang('msg_alert_limited_by_config'), $interval);
 
-			$oSpamFilterController = &getController('spamfilter');
-			$oSpamFilterController->insertLog();
+		foreach($conditions as $cond)
+		{
+			//최근 로그를 limit_count만큼 가져온다.
+			$logs = $this->getLog($cond->limit_count+1); // regdate로 내림차순으로 리턴 +1: 현재접속도 이미 로그이 기록되어 있으므로
 
-			return new Object(-1, $message);
+			//최근 로그가 limit_count만큼 안되면 continue;
+			$count = count($logs);
+			if($count < $cond->limit_count) continue;
+			debugPrint($logs);			
+
+			//최근 로그 1번과 limit_count번의 시간차이(used_interval) 계산
+			$current_time = ztime(array_shift($logs)->regdate); 
+			$last_time = ztime(array_shift($logs)->regdate);
+			$first_time = ztime(array_pop($logs)->regdate);
+			$used_interval =  $last_time - $first_time;
+
+			// used_interval이 interval보다 크면 continue;
+			if($used_interval > $cond->interval) continue;
+			
+			// used_interval이 interval보다 작으면 최근 등록글 1번과 지금 시간차이(standby_time)를 계산
+			$standby_time = $current_time - $last_time;
+			
+			// standby_time가 limit_time보다 짧으면 return Obejct(-1,..);
+			if($standby_time < $cond->limit_time) return new Object(-1, '지정된 시간에 너무 많은 등록시도를 하였습니다. '.$cond->limit_time.'초후에 등록할 수 있습니다!');
 		}
+
 		return new Object();
 	}
 
@@ -138,6 +156,19 @@ class spamfilterModel extends spamfilter
 		if($count>0) return new Object(-1, 'msg_alert_trackback_denied');
 
 		return new Object();
+	}
+
+	/**
+	 * @brief Return the number of logs recorded within the interval for the specified IPaddress
+	 */
+	function getLog($limit_count)
+	{
+		$ipaddress = $_SERVER['REMOTE_ADDR'];
+		
+		$args->ipaddress = $ipaddress;
+		$args->list_count = $limit_count;
+		$output = executeQueryArray('spamfilter.getLog', $args);
+		return $output->data;
 	}
 
 	/**

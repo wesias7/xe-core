@@ -2014,7 +2014,7 @@ class documentController extends document
 	}
 
 	/**
-	 * Move/ Delete the document in the seession
+	 * Move/ Delete the document in the session
 	 * @return void|Object
 	 */
 	function procDocumentManageCheckedDocument()
